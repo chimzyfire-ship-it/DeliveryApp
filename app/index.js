@@ -5,7 +5,7 @@ import * as LocalAuthentication from 'expo-local-authentication';
 import * as Location from 'expo-location';
 import * as Updates from 'expo-updates';
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Dimensions, FlatList, Image, Keyboard, KeyboardAvoidingView, LayoutAnimation, Linking, Modal, Platform, RefreshControl, SafeAreaView, Share, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, UIManager, View } from 'react-native';
+import { ActivityIndicator, Alert, FlatList, Image, Keyboard, KeyboardAvoidingView, LayoutAnimation, Linking, Modal, Platform, RefreshControl, SafeAreaView, Share, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, UIManager, View } from 'react-native';
 import MapView, { Marker, Polyline, PROVIDER_DEFAULT } from 'react-native-maps';
 import { supabase } from '../supabase';
 
@@ -39,8 +39,6 @@ const DARK_MAP_STYLE = [
   { "featureType": "road.highway", "elementType": "geometry", "stylers": [{ "color": "#3c3c3c" }] },
   { "featureType": "water", "elementType": "geometry", "stylers": [{ "color": "#000000" }] }
 ];
-
-const SCREEN_HEIGHT = Dimensions.get('window').height;
 
 // === UTILITIES ===
 const generatePIN = () => Math.floor(1000 + Math.random() * 9000).toString();
@@ -113,7 +111,7 @@ const OrderTimeline = ({ status }) => {
 
 // === COMPONENT: EARNINGS GRAPH ===
 const EarningsGraph = ({ data }) => {
-  const max = Math.max(...data, 5000); 
+  const max = Math.max(...data, 5000) || 1000; 
   const days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
   return (
     <View style={styles.graphContainer}>
@@ -169,7 +167,7 @@ export default function App() {
     <View style={styles.loadingScreen}>
         <Text style={{fontSize: 50, marginBottom: 20}}>📦</Text>
         <ActivityIndicator size="large" color={THEME.primary}/>
-        <Text style={{color:THEME.subtext, marginTop: 20, letterSpacing: 2}}>HOSA LOGISTICS</Text>
+        <Text style={{color:THEME.subtext, marginTop: 20, letterSpacing: 2}}>OTG LOGISTICS</Text>
     </View>
   );
 
@@ -212,7 +210,7 @@ function AuthScreen({ showToast }) {
   };
 
   const handleBiometricLogin = async () => {
-    const result = await LocalAuthentication.authenticateAsync({ promptMessage: 'Login to Hosa Logistics' });
+    const result = await LocalAuthentication.authenticateAsync({ promptMessage: 'Login to OTG Logistics' });
     if (result.success) showToast("Biometrics Verified", "success");
   };
 
@@ -221,8 +219,8 @@ function AuthScreen({ showToast }) {
       <StatusBar barStyle="light-content" />
       <View style={styles.brandSection}>
         <View style={styles.logoBadge}><Text style={{fontSize:40}}>📦</Text></View>
-        <Text style={styles.logoText}>HOSA</Text>
-        <Text style={styles.logoSub}>LOGISTICS OS</Text>
+        <Text style={styles.logoText}>OTG</Text>
+        <Text style={styles.logoSub}>ON THE GO</Text>
       </View>
       <View style={styles.authCard}>
         <Text style={styles.welcomeText}>{isLogin ? "SECURE ACCESS" : "NEW ACCOUNT"}</Text>
@@ -248,7 +246,7 @@ function AuthScreen({ showToast }) {
 function AdminDashboard() {
   const [missions, setMissions] = useState([]);
   const [drivers, setDrivers] = useState([]);
-  const [stats, setStats] = useState({ revenue: 0, active: 0, fleet: 0 });
+  const [stats, setStats] = useState({ revenue: 0, active: 0, pending: 0 });
   const [activeTab, setActiveTab] = useState('live'); // 'live', 'riders', 'history'
   const [isExpanded, setIsExpanded] = useState(false); // Collapsed by default
 
@@ -299,7 +297,7 @@ function AdminDashboard() {
 
       <SafeAreaView pointerEvents="box-none" style={{flex: 1}}>
         <View style={styles.glassHeader}>
-           <Text style={styles.headerTitle}>H O S A</Text>
+           <Text style={styles.headerTitle}>O T G</Text>
            <TouchableOpacity onPress={() => supabase.auth.signOut()} style={styles.logoutBtnPill}><Text style={styles.logoutText}>🛑 LOGOUT</Text></TouchableOpacity>
         </View>
         <View style={styles.kpiContainer}>
@@ -503,7 +501,7 @@ function HomeScreen({ session, profile, refreshProfile, refreshOrders, showToast
       
       <SafeAreaView style={{position:'absolute', top:0, width:'100%', pointerEvents: 'box-none'}}>
          <View style={styles.glassHeader}>
-            <Text style={styles.headerTitle}>H O S A</Text>
+            <Text style={styles.headerTitle}>O T G</Text>
             <TouchableOpacity onPress={() => supabase.auth.signOut()} style={styles.logoutBtnPill}><Text style={styles.logoutText}>🛑 LOGOUT</Text></TouchableOpacity>
          </View>
       </SafeAreaView>
@@ -635,7 +633,7 @@ function AccountScreen({ session, profile, refreshProfile, showToast }) {
       } catch(e) { showToast(e.message, "error"); }
   };
 
-  const shareApp = async () => { try { await Share.share({ message: "Download Hosa Logistics App: The future of delivery." }); } catch (e) {} };
+  const shareApp = async () => { try { await Share.share({ message: "Download OTG Logistics App: The future of delivery." }); } catch (e) {} };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -652,7 +650,7 @@ function AccountScreen({ session, profile, refreshProfile, showToast }) {
          <TouchableOpacity onPress={()=>setSecurityModal({visible:true, type:'password'})} style={styles.settingRow}><Text style={{color:'#FFF'}}>🔒 Change Password</Text><Text style={{color:THEME.subtext}}>→</Text></TouchableOpacity>
       </View>
       <View style={styles.settingsSection}><Text style={styles.sectionHeader}>APP SETTINGS</Text>
-         <TouchableOpacity onPress={checkForUpdates} style={styles.settingRow}><Text style={{color:'#FFF'}}>🔄 Check for Updates</Text><Text style={{color:THEME.success}}>v28.0</Text></TouchableOpacity>
+         <TouchableOpacity onPress={checkForUpdates} style={styles.settingRow}><Text style={{color:'#FFF'}}>🔄 Check for Updates</Text><Text style={{color:THEME.success}}>v29.0</Text></TouchableOpacity>
          <TouchableOpacity onPress={shareApp} style={styles.settingRow}><Text style={{color:'#FFF'}}>📢 Share App</Text><Text style={{color:THEME.subtext}}>→</Text></TouchableOpacity>
       </View>
       <TouchableOpacity style={styles.logoutBtn} onPress={() => { triggerHaptic(); supabase.auth.signOut(); }}><Text style={{color:THEME.danger, fontWeight:'bold', fontSize:16}}>LOGOUT</Text></TouchableOpacity>
