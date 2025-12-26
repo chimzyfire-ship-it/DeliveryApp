@@ -1,50 +1,112 @@
-# Welcome to your Expo app 👋
+# 📦 OTG Logistics (v1.0)
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+**The Next-Generation Last-Mile Delivery Infrastructure.** Built for speed, scale, and real-time fleet command.
 
-## Get started
+![OTG Banner](https://via.placeholder.com/1200x400.png?text=OTG+LOGISTICS)
 
-1. Install dependencies
+## 🚀 Overview
 
-   ```bash
-   npm install
-   ```
+**OTG (On The Go)** is a full-stack, role-based logistics platform designed to connect Customers, Riders, and Administrators in real-time. Unlike standard courier apps, OTG utilizes a **"Titanium 2025" Dark UI**, persistent local state, and OSRM routing algorithms to deliver a seamless, native experience without heavy API costs.
 
-2. Start the app
+### 📱 One Codebase, Three Ecosystems
+The app intelligently renders different interfaces based on the user's secure role:
+1.  **🦅 Admin Command Center:** A God-mode view of the entire fleet, revenue, and active missions.
+2.  **🛵 Rider Workstation:** A focused, map-based interface for job acceptance, navigation, and earnings.
+3.  **📦 Customer Portal:** A clean, glassmorphic interface for booking goods/document delivery and live tracking.
 
-   ```bash
-   npx expo start
-   ```
+---
 
-In the output, you'll find options to open the app in a
+## ✨ Key Features
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+### 🦅 Admin Side (Command Center)
+* **Live Fleet Tracking:** Monitor riders in real-time on a global map (🟢 Online / ⚪️ Offline).
+* **Retractable Command Deck:** Fluid sliding panel to toggle between Map View and Data Tables.
+* **Revenue Analytics:** Real-time KPI cards for Revenue, Active Missions, and Fleet Size.
+* **Mission History:** Complete ledger of all accepted, pending, and completed jobs.
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+### 🛵 Rider Side (Logistics Partner)
+* **Ghost Mode Map:** Always-on map background that dims when Offline.
+* **Smart Job Queue:** Proximity-based job sorting (e.g., "Pickup is 2.4km away").
+* **Real-Time Earnings:** Weekly performance graphs and acceptance rate stats based on actual completed jobs.
+* **Persistent State:** App remembers "Online/Offline" status even after restarts (AsyncStorage).
 
-## Get a fresh project
+### 📦 Customer Side (Client)
+* **Smart Routing:** Real road geometry drawing using OSRM (Open Source Routing Machine).
+* **Fare Engine:** Automatic price calculation based on real-time distance.
+* **Live Order Tracking:** Step-by-step timeline (Pending -> Assigned -> Arrived -> Completed).
+* **Secure Profile:** Biometric login support and secure Email/Password management.
 
-When you're ready, run:
+---
 
+## 🛠 Tech Stack
+
+* **Framework:** [React Native](https://reactnative.dev/) (via [Expo](https://expo.dev))
+* **Backend / Database:** [Supabase](https://supabase.com) (PostgreSQL + Realtime)
+* **Maps & Geospatial:** `react-native-maps`, `expo-location`, OSRM API
+* **State Persistence:** `@react-native-async-storage/async-storage`
+* **UI/UX:** Custom "Titanium" Theme, Glassmorphism, Haptic Feedback, LayoutAnimation
+
+---
+
+## ⚙️ Installation & Setup
+
+### 1. Clone the Repository
 ```bash
-npm run reset-project
-```
+git clone [https://github.com/chimzyfire-ship-it/DeliveryApp.git](https://github.com/chimzyfire-ship-it/DeliveryApp.git)
+cd DeliveryApp
+#### 2. Install dependencies
+npm install
+# or
+npx expo install
+### 3. configure supabase
+import { createClient } from '@supabase/supabase-js';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+const supabaseUrl = 'YOUR_SUPABASE_URL';
+const supabaseAnonKey = 'YOUR_SUPABASE_ANON_KEY';
 
-## Learn more
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    storage: AsyncStorage,
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: false,
+  },
+});
+### 4. Database Schema
+-- Profiles Table
+create table public.profiles (
+  id uuid references auth.users not null primary key,
+  email text,
+  full_name text,
+  phone_number text,
+  role text check (role in ('customer', 'driver', 'admin')),
+  avatar_url text,
+  home_address text,
+  home_lat float,
+  home_lng float,
+  work_address text,
+  work_lat float,
+  work_lng float,
+  is_online boolean default false
+);
 
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+-- Missions (Orders) Table
+create table public.missions (
+  id bigint generated by default as identity primary key,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  pickup text,
+  pickup_lat float,
+  pickup_lng float,
+  dropoff text,
+  dropoff_lat float,
+  dropoff_lng float,
+  price text,
+  distance_km float,
+  status text default 'pending', -- pending, in_progress, arrived, completed
+  driver_id uuid references public.profiles(id),
+  delivery_pin text,
+  rating int default 5
+);
+### Run the App
+npx expo start
